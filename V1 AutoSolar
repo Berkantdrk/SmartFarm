@@ -1,0 +1,33 @@
+// Henüz Hazır Değil
+
+
+#include <Servo.h>
+
+#define LDR_PIN A0
+#define SERVO_1_PIN 9
+#define SERVO_2_PIN 10
+
+Servo servo1;
+Servo servo2;
+
+int ldrValue;
+int servo1Pos = 90; // Başlangıç konumu
+int servo2Pos = 90; // Başlangıç konumu
+
+void setup() {
+  servo1.attach(SERVO_1_PIN);
+  servo2.attach(SERVO_2_PIN);
+}
+
+void loop() {
+  ldrValue = analogRead(LDR_PIN);
+
+  // LDR değeri ile servoların pozisyonunu güncelle
+  servo1Pos = map(ldrValue, 0, 1023, 0, 180);
+  servo2Pos = map(ldrValue, 0, 1023, 180, 0);
+
+  servo1.write(servo1Pos);
+  servo2.write(servo2Pos);
+
+  delay(10);
+}
