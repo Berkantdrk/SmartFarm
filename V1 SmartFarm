@@ -1,4 +1,4 @@
-// Henüz Hazır Değil
+// Henüz Hazır Değil.
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <DHT.h>
