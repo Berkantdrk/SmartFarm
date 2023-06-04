@@ -1,0 +1,96 @@
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <DHT.h>
+
+#define ONE_WIRE_BUS 2        // DS18B20 
+#define DHTPIN 3              // DHT11 nem sensörü 
+#define DHTTYPE DHT11         // DHT sensörünün tipi 
+#define FAN_PIN 4             
+#define PUMP_PIN 5            
+#define LIGHT_PIN 6           
+#define SOIL_MOISTURE_PIN A0  
+#define WATER_PUMP_PIN 7      
+
+DHT dht(DHTPIN, DHTTYPE);              
+OneWire oneWire(ONE_WIRE_BUS);         
+DallasTemperature sensors(&oneWire);   
+
+void setup() {
+  Serial.begin(9600);    
+  dht.begin();           
+  sensors.begin();       // DS18B20 Isı sensörü
+
+// Kontrol Pini ayarlama
+  pinMode(FAN_PIN, OUTPUT);        
+  pinMode(PUMP_PIN, OUTPUT);       
+  pinMode(LIGHT_PIN, OUTPUT);      
+  pinMode(WATER_PUMP_PIN, OUTPUT); 
+}
+
+void loop() { // Sıcaklık Nem Işık Toprak Nem Değerleri alma
+  sensors.requestTemperatures();   
+  float temperature = sensors.getTempCByIndex(0);   
+  float humidity = dht.readHumidity();              
+  int lightLevel = analogRead(A1);                  
+  int soilMoisture = analogRead(SOIL_MOISTURE_PIN); 
+
+  Serial.print("Sicaklik: ");
+  Serial.print(temperature);
+  Serial.print(" C   ");
+  Serial.print("Nem: ");
+  Serial.print(humidity);
+  Serial.print(" %   ");
+  Serial.print("Isik: ");
+  Serial.print(lightLevel);
+  Serial.print("   ");
+  Serial.print("Toprak Nem: ");
+  Serial.println(soilMoisture);
+
+  // Sıcaklık 
+  if (temperature > 25) {
+    digitalWrite(FAN_PIN, HIGH);   // Fanı çalıştır
+    Serial.println("Fan calisiyor");
+  } else {
+    digitalWrite(FAN_PIN, LOW);    // Fanı durdur
+    Serial.println("Fan durdu");
+  }
+
+  // Nem
+  if (humidity < 60) {
+    digitalWrite(PUMP_PIN, HIGH);  // Pompayı çalıştır
+    Serial.println("Pompa calisiyor");
+  } else {
+    digitalWrite(PUMP_PIN, LOW);   // Pompayı durdur
+    Serial.println("Pompa durdu");
+  }
+
+  // Işık
+  if (lightLevel < 500) {
+    digitalWrite(LIGHT_PIN, HIGH); // LED'i yak
+    Serial.println("LED yaniyor");
+  } else {
+    digitalWrite(LIGHT_PIN, LOW);  // LED'i kapat
+    Serial.println("LED sonduruldu");
+  }
+
+  // Toprak nem 
+  if (soilMoisture < 300) {
+    Serial.println("Sulama yapiliyor");
+    startWatering();   // Sulama işlemini başlat
+  } else {
+    Serial.println("Toprak yeterince nemli");
+    stopWatering();    // Sulama işlemini durdur
+  }
+
+  delay(2000);
+}
+
+
+void startWatering() {
+  digitalWrite(WATER_PUMP_PIN, HIGH);   // Sulama pompasını çalıştır
+}
+
+
+void stopWatering() {
+  digitalWrite(WATER_PUMP_PIN, LOW);    // Sulama pompasını durdur
+}
